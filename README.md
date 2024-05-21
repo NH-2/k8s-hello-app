@@ -20,16 +20,33 @@ To demonstrate ingress capabilities, a domain name is needed. For this, an entry
 sudo echo "$(minikube ip) nabilhouidi.io"   >> /etc/hosts
 ```
 
-### install cilium
-Next, We need to install Cilium. Cilium will be responsible for handling the networking inside the cluster and making sure out NetWorkingPolicies are implemented and respected.
+### Optional: install cilium-cli
 
-For that, first  install `cilium-cli`, the helper cli for cilium (our CNI implementation).
+Optionally,  install `cilium-cli`, the helper cli for cilium (our CNI implementation).  Cilium is responsible for handling the networking inside the cluster and making sure out NetWorkingPolicies are implemented and respected.
 
 follow the installation instructions [here](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/#install-the-cilium-cli).
 
-Then, you can install cilium on the cluster 
+We can use `cilium-cli` to make sure the CNI is installed and configured correctly. 
 ```bash
-cilium install --version 1.15.5
+cilium status
+```
+The output would look similar to this:
+```
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:             OK
+ \__/¯¯\__/    Operator:           OK
+ /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ \__/¯¯\__/    Hubble Relay:       disabled
+    \__/       ClusterMesh:        disabled
+
+Deployment             cilium-operator    Desired: 1, Ready: 1/1, Available: 1/1
+DaemonSet              cilium             Desired: 1, Ready: 1/1, Available: 1/1
+Containers:            cilium             Running: 1
+                       cilium-operator    Running: 1
+Cluster Pods:          7/7 managed by Cilium
+Helm chart version:    
+Image versions         cilium             quay.io/cilium/cilium:v1.12.3@sha256:30de50c4dc0a1e1077e9e7917a54d5cab253058b3f779822aec00f5c817ca826: 1
+                       cilium-operator    quay.io/cilium/operator-generic:v1.12.3@sha256:816ec1da586139b595eeb31932c61a7c13b07fb4a0255341c0e0f18608e84eff: 1
 ```
 
 ### enable relevant Addons
@@ -52,20 +69,20 @@ kubectl get all -n hello-application
 ```
 which print an output similar to : 
 ```
-NAME                             READY   STATUS   RESTARTS   AGE
-pod/hello-app-55d4dc48bf-kmk8k   0/1     Error    1          41h
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/hello-app-55d4dc48bf-87zmp   1/1     Running   0          21m
 
-NAME                        TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-service/hello-app-service   LoadBalancer   10.109.251.191   <pending>     80:31114/TCP   23h
+NAME                        TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+service/hello-app-service   LoadBalancer   10.98.35.20   <pending>     80:32064/TCP   20m
 
 NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/hello-app   0/1     1            0           46h
+deployment.apps/hello-app   1/1     1            1           21m
 
 NAME                                   DESIRED   CURRENT   READY   AGE
-replicaset.apps/hello-app-55d4dc48bf   1         1         0       46h
+replicaset.apps/hello-app-55d4dc48bf   1         1         1       21m
 
 NAME                                                REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/hello-app-hpa   Deployment/hello-app   0%/50%    1         5         1          46h
+horizontalpodautoscaler.autoscaling/hello-app-hpa   Deployment/hello-app   0%/50%    1         5         1          21s
 ```
 
 ## Testing Scenarios
@@ -79,7 +96,7 @@ kubectl get hpa -n hello-application
 ```
 2. Run the load testing command
 ```bash
-while sleep 0.0000001; do wget -q -O- http://nabilhouidi.io/hello-app; done
+while sleep 0.000000000000001; do wget -q -O- http://nabilhouidi.io/hello-app; done
 ```
 3. Monitor cpu usage
 ```bash
