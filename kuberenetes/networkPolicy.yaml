@@ -1,0 +1,66 @@
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-all
+  namespace: hello-application
+spec:
+  podSelector: 
+    matchLabels:
+      app: hello-app
+  policyTypes:
+    - Ingress
+    - Egress
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-internet
+  namespace: hello-application
+spec:
+  podSelector:
+    matchLabels:
+      app: hello-app
+  policyTypes:
+  - Egress
+  - Ingress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: "0.0.0.0/0"
+        except:
+        - "10.0.0.0/8"
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: "kube-system"
+    - podSelector:
+        matchLabels:
+          k8s-app: "kube-dns"
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: "ingress-nginx"
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: "ingress-nginx"
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-from-ingresscontroller
+  namespace: hello-application
+spec:
+  podSelector: 
+    matchLabels:
+      app: hello-app
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: "ingress-nginx"
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: "ingress-nginx"

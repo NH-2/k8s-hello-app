@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-app-ingress
+  namespace: hello-application
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "nabilhouidi.io"
+    http:
+      paths:
+      - path: /hello-app
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-app-service
+            port:
+              number: 80
